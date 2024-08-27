@@ -24,6 +24,109 @@ api = Api(app)
 def index():
     return "<h1>Code challenge</h1>"
 
+@app.route("/GET/restaurants")
+def get_restaurants():
+    restaurants =Restaurant.query.all().first()
+    if restaurants:
+        body =restaurants.to_dict()
+        status =200
+    else:
+        body={'message':'Restaurant not found'} 
+        status =400
+    return make_response(body,status)
+    
+
+@app.route("/GET/restaurant/<int:id>")
+def get_restaurant_by_id(id):
+    restaurant =Restaurant.query.filter(Restaurant.id ==id).first()
+    if restaurant:
+        body=restaurant.to_dict()
+        status=200
+    else:
+        body={'message':f'Restaurant{id}not found'}
+        status=404
+    return make_response(body,status)
+        
+
+    
+
+@app.route("/DELETE/restaurant/<int:id>" ,methods =['GET','DELETE'])
+def del_restaurant_by_id(id):
+    restaurant = Restaurant.query.filter(Restaurant.id == id).first()
+
+    if request.method == 'GET':
+        restaurant_dict = restaurant.to_dict()
+
+        response = make_response(
+            restaurant_dict,
+            200
+        )
+
+        return response
+
+    elif request.method == 'DELETE':
+        db.session.delete(restaurant)
+        db.session.commit()
+
+        response_body = {
+            "delete_successful": True,
+            "message": "Restaurant deleted."
+        }
+
+        response = make_response(
+            response_body,
+            200
+        )
+        return response
+
+    
+
+@app.route("/GET/pizzas")
+def get_pizzas():
+    pizzas =Pizza.query.all().first()
+    if pizzas:
+        body =pizzas.to_dict()
+        status =200
+    else:
+        body={'message':'Pizzas not found'} 
+        status =400
+    return make_response(body,status)
+    
+    
+
+@app.route("/POST/restaurant_pizzas", methods =['GET','POST'])
+def post_restaurant_pizzas():
+    if request.method == 'GET':
+        restaurant_pizzas = []
+        for restaurant_pizza in RestaurantPizza.query.all():
+            restaurant_pizza_dict = restaurant_pizza.to_dict()
+            restaurant_pizzas.append(restaurant_pizza_dict)
+
+        response = make_response(
+            restaurant_pizzas,
+            200
+        )
+
+        return response
+
+    elif request.method == 'POST':
+        new_restaurant_pizza=RestaurantPizza(
+            price=request.get('price'),
+            restaurant_id=request.get('restaurant_id'),
+            pizza_id=request.get('pizza_id')
+        )
+        db.session.add(new_restaurant_pizza)
+        db.session.commit()
+        restaurant_pizza_dict=new_restaurant_pizza.to_dict()
+
+        response = make_response(
+            restaurant_pizza_dict,
+            201
+        )
+
+        return response
+    
+
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
