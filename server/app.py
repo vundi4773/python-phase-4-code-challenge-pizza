@@ -24,11 +24,11 @@ api = Api(app)
 def index():
     return "<h1>Code challenge</h1>"
 
-@app.route("/GET/restaurants")
+@app.route("/restaurants", methods=['GET'])
 def get_restaurants():
-    restaurants =Restaurant.query.all().first()
+    restaurants =Restaurant.query.all()
     if restaurants:
-        body =restaurants.to_dict()
+        body =(restaurant.to_dict() for restaurant in restaurants)
         status =200
     else:
         body={'message':'Restaurant not found'} 
@@ -36,7 +36,7 @@ def get_restaurants():
     return make_response(body,status)
     
 
-@app.route("/GET/restaurant/<int:id>")
+@app.route("/restaurant/<int:id>",methods=['GET'])
 def get_restaurant_by_id(id):
     restaurant =Restaurant.query.filter(Restaurant.id ==id).first()
     if restaurant:
@@ -50,21 +50,11 @@ def get_restaurant_by_id(id):
 
     
 
-@app.route("/DELETE/restaurant/<int:id>" ,methods =['GET','DELETE'])
+@app.route("/restaurant/<int:id>" ,methods =['DELETE'])
 def del_restaurant_by_id(id):
     restaurant = Restaurant.query.filter(Restaurant.id == id).first()
 
-    if request.method == 'GET':
-        restaurant_dict = restaurant.to_dict()
-
-        response = make_response(
-            restaurant_dict,
-            200
-        )
-
-        return response
-
-    elif request.method == 'DELETE':
+    if request.method == 'DELETE':
         db.session.delete(restaurant)
         db.session.commit()
 
@@ -81,11 +71,11 @@ def del_restaurant_by_id(id):
 
     
 
-@app.route("/GET/pizzas")
+@app.route("/pizzas", methods=['GET'])
 def get_pizzas():
-    pizzas =Pizza.query.all().first()
+    pizzas =Pizza.query.all()
     if pizzas:
-        body =pizzas.to_dict()
+        body =(pizza.to_dict() for pizza in pizzas)
         status =200
     else:
         body={'message':'Pizzas not found'} 
@@ -94,22 +84,10 @@ def get_pizzas():
     
     
 
-@app.route("/POST/restaurant_pizzas", methods =['GET','POST'])
+@app.route("/POST/restaurant_pizzas", methods =['POST'])
 def post_restaurant_pizzas():
-    if request.method == 'GET':
-        restaurant_pizzas = []
-        for restaurant_pizza in RestaurantPizza.query.all():
-            restaurant_pizza_dict = restaurant_pizza.to_dict()
-            restaurant_pizzas.append(restaurant_pizza_dict)
-
-        response = make_response(
-            restaurant_pizzas,
-            200
-        )
-
-        return response
-
-    elif request.method == 'POST':
+   
+    if request.method == 'POST':
         new_restaurant_pizza=RestaurantPizza(
             price=request.get('price'),
             restaurant_id=request.get('restaurant_id'),
